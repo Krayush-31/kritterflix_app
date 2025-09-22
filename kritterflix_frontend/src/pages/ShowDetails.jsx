@@ -2,18 +2,39 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../api";
 import Loader from "../component/Loader";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaHeart, FaRegHeart } from "react-icons/fa";
 
 export default function ShowDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [show, setShow] = useState(null);
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [episodes, setEpisodes] = useState([]);
-  const [showName, setShowName] = useState("");
   const [loading, setLoading] = useState(true);
   const [seasonLoading, setSeasonLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("favorites");
+    if (stored) setFavorites(JSON.parse(stored));
+  }, []);
+
+  const toggleFavorite = (item) => {
+    setFavorites((prev) => {
+      const exists = prev.some((fav) => fav.id === item.id);
+      const updated = exists
+        ? prev.filter((fav) => fav.id !== item.id)
+        : [...prev, item];
+      localStorage.setItem("favorites", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const isFavorite = (id) => favorites.some((fav) => fav.id === id);
 
   useEffect(() => {
     const fetchShowDetails = async () => {
@@ -21,9 +42,9 @@ export default function ShowDetails() {
       setError(null);
       try {
         const res = await API.get(`/tv/${id}`);
+        setShow(res.data);
         const showSeasons = res.data.seasons || [];
         setSeasons(showSeasons);
-        setShowName(res.data.name);
         setSelectedSeason(showSeasons?.[0]?.season_number || 1);
 
         if (showSeasons?.[0]?.season_number) {
@@ -60,7 +81,7 @@ export default function ShowDetails() {
     fetchEpisodes();
   }, [id, selectedSeason]);
 
-  if (loading) {
+  if (loading || !show) {
     return (
       <div className="flex items-center justify-center h-screen bg-black text-white">
         <Loader show={true} size={60} color="#fff" />
@@ -79,8 +100,40 @@ export default function ShowDetails() {
         </button>
       </div>
 
-      <h2 className="text-3xl font-bold mb-6">{showName}</h2>
+      <div className=" w-full relative mb-6 rounded-xl overflow-hidden shadow-lg h-[400px]">
+        <img
+          src={
+            show.poster_path
+              ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+              : "https://via.placeholder.com/500x750?text=No+Image"
+          }
+          alt={show.name}
+          className=" w-full h-full object-contain rounded-xl"
+        />
 
+        
+        <button
+          onClick={() => toggleFavorite(show)}
+          className="absolute top-4 right-4 text-3xl transition-transform duration-200"
+        >
+          {isFavorite(show.id) ? (
+            <FaHeart className="text-red-500 scale-125" />
+          ) : (
+            <FaRegHeart className="text-white" />
+          )}
+        </button>
+
+        {/* Overlay with show name and Play button */}
+        <div className="absolute bottom-4 left-4 bg-black/50 rounded-md px-4 py-2 flex items-center gap-4">
+          <h2 className="text-2xl font-bold">{show.name}</h2>
+          <button
+            className="bg-white text-black px-4 py-1 rounded-lg font-semibold hover:bg-gray-200 transition"
+            onClick={() => navigate(`/player/${id}`)}
+          >
+            ▶ Play
+          </button>
+        </div>
+      </div>
       {seasons.length > 0 && (
         <div className="mb-6">
           <label className="mr-2 font-semibold">Select Season:</label>

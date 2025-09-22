@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import ShowDetails from "./pages/ShowDetails";
 import Search from "./pages/Search";
 import Navbar from "./component/Navbar";
+import PlayerPage from "./component/PlayerPage";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="" element={<Home />} />
           <Route path="/show/:id" element={<ShowDetails />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/player/:id" element={<PlayerPage />} />
         </Routes>
       </div>
     </Router>
