@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply text-white bg-black overflow-y-auto;
+}
+
+/* Hide vertical scrollbar globally */
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Optional: hide horizontal scrollbar for carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
